@@ -500,45 +500,15 @@ char *yytext;
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "MexprEnums.h"
 
-typedef struct lex_data_ {
-    int token_code;
-    int token_len;
-    char* token_val;
-} lex_data_t;
+#include "ParserExport.h"
 
-#define MAX_MEXPR_LEN 512
-#define MAX_STRING_SIZE 512
-
-typedef struct stack_ {
-    int top;
-    lex_data_t data[MAX_MEXPR_LEN];
-} stack_t;
-
-extern "C" int yylex(); 
-
-extern char lex_buffer[MAX_STRING_SIZE]; 
-extern stack_t undo_stack; 
-extern int cyylex(); 
-extern void yyrewind(int n); 
-extern char *curr_ptr; 
-
+/* ---------- Global variables ---------- */
 stack_t undo_stack = { .top = -1 };
-
-#define PARSER_EOL                   300
-#define PARSER_QUIT                  301
-#define MATH_INTEGER_VALUE           302
-#define MATH_DOUBLE_VALUE            303
-#define MATH_IDENTIFIER              304
-#define MATH_IDENTIFIER_IDENTIFIER   305
-#define MATH_STRING_VALUE            306
-#define PARSER_WHITE_SPACE           307
-
 char lex_buffer[MAX_STRING_SIZE];
-char *curr_ptr = lex_buffer; 
-char *lex_curr_token; 
-int lex_curr_token_len; 
+char *curr_ptr = lex_buffer;
+char *lex_curr_token;
+int lex_curr_token_len;
 
 /* ---------- Stack Helpers ---------- */
 static void
@@ -621,9 +591,9 @@ void lex_set_scan_buffer(const char *buffer) {
     curr_ptr = lex_buffer;
     yy_scan_string(lex_buffer);
 }
-#line 624 "lex.yy.c"
+#line 594 "lex.yy.c"
 /* ---------- Rules Section ---------- */
-#line 626 "lex.yy.c"
+#line 596 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -840,10 +810,10 @@ YY_DECL
 		}
 
 	{
-#line 130 "Parser.l"
+#line 100 "Parser.l"
 
 
-#line 846 "lex.yy.c"
+#line 816 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -902,179 +872,179 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 132 "Parser.l"
+#line 102 "Parser.l"
 { lex_push(MATH_CPP_BRACKET_START, yytext, yyleng); return MATH_CPP_BRACKET_START; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 133 "Parser.l"
+#line 103 "Parser.l"
 { lex_push(MATH_CPP_BRACKET_END, yytext, yyleng); return MATH_CPP_BRACKET_END; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 134 "Parser.l"
+#line 104 "Parser.l"
 { lex_push(MATH_CPP_LESS_THAN_EQ, yytext, yyleng); return MATH_CPP_LESS_THAN_EQ; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 135 "Parser.l"
+#line 105 "Parser.l"
 { lex_push(MATH_CPP_LESS_THAN, yytext, yyleng); return MATH_CPP_LESS_THAN; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 136 "Parser.l"
+#line 106 "Parser.l"
 { lex_push(MATH_CPP_GREATER_THAN, yytext, yyleng); return MATH_CPP_GREATER_THAN; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 137 "Parser.l"
+#line 107 "Parser.l"
 { lex_push(MATH_CPP_EQ, yytext, yyleng); return MATH_CPP_EQ; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 138 "Parser.l"
+#line 108 "Parser.l"
 { lex_push(MATH_CPP_NEQ, yytext, yyleng); return MATH_CPP_NEQ; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 140 "Parser.l"
+#line 110 "Parser.l"
 { lex_push(MATH_CPP_AND, yytext, yyleng); return MATH_CPP_AND; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 141 "Parser.l"
+#line 111 "Parser.l"
 { lex_push(MATH_CPP_OR, yytext, yyleng); return MATH_CPP_OR; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 143 "Parser.l"
+#line 113 "Parser.l"
 { lex_push(MATH_CPP_MUL, yytext, yyleng); return MATH_CPP_MUL; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 144 "Parser.l"
+#line 114 "Parser.l"
 { lex_push(MATH_CPP_PLUS, yytext, yyleng); return MATH_CPP_PLUS; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 145 "Parser.l"
+#line 115 "Parser.l"
 { lex_push(MATH_CPP_MINUS, yytext, yyleng); return MATH_CPP_MINUS; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 146 "Parser.l"
+#line 116 "Parser.l"
 { lex_push(MATH_CPP_DIV, yytext, yyleng); return MATH_CPP_DIV; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 147 "Parser.l"
+#line 117 "Parser.l"
 { lex_push(MATH_CPP_COMMA, yytext, yyleng); return MATH_CPP_COMMA; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 149 "Parser.l"
+#line 119 "Parser.l"
 { lex_push(MATH_CPP_SQRT, yytext, yyleng); return MATH_CPP_SQRT; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 150 "Parser.l"
+#line 120 "Parser.l"
 { lex_push(MATH_CPP_SQR, yytext, yyleng); return MATH_CPP_SQR; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 151 "Parser.l"
+#line 121 "Parser.l"
 { lex_push(MATH_CPP_MAX, yytext, yyleng); return MATH_CPP_MAX; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 152 "Parser.l"
+#line 122 "Parser.l"
 { lex_push(MATH_CPP_MIN, yytext, yyleng); return MATH_CPP_MIN; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 153 "Parser.l"
+#line 123 "Parser.l"
 { lex_push(MATH_CPP_SIN, yytext, yyleng); return MATH_CPP_SIN; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 154 "Parser.l"
+#line 124 "Parser.l"
 { lex_push(MATH_CPP_COS, yytext, yyleng); return MATH_CPP_COS; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 155 "Parser.l"
+#line 125 "Parser.l"
 { lex_push(MATH_CPP_POW, yytext, yyleng); return MATH_CPP_POW; }
 	YY_BREAK
 case 22:
 /* rule 22 can match eol */
 YY_RULE_SETUP
-#line 157 "Parser.l"
+#line 127 "Parser.l"
 { return PARSER_EOL; }
 	YY_BREAK
 case 23:
 /* rule 23 can match eol */
 YY_RULE_SETUP
-#line 158 "Parser.l"
+#line 128 "Parser.l"
 { /* line continuation */ }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 160 "Parser.l"
+#line 130 "Parser.l"
 { process_white_space(1); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 161 "Parser.l"
+#line 131 "Parser.l"
 { process_white_space(4); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 163 "Parser.l"
+#line 133 "Parser.l"
 { return PARSER_QUIT; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 165 "Parser.l"
+#line 135 "Parser.l"
 { lex_push(MATH_INTEGER_VALUE, yytext, yyleng); return MATH_INTEGER_VALUE; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 166 "Parser.l"
+#line 136 "Parser.l"
 { lex_push(MATH_DOUBLE_VALUE, yytext, yyleng); return MATH_DOUBLE_VALUE; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 168 "Parser.l"
+#line 138 "Parser.l"
 { lex_push(MATH_IDENTIFIER_IDENTIFIER, yytext, yyleng); return MATH_IDENTIFIER_IDENTIFIER; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 169 "Parser.l"
+#line 139 "Parser.l"
 { lex_push(MATH_IDENTIFIER, yytext, yyleng); return MATH_IDENTIFIER; }
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 171 "Parser.l"
+#line 141 "Parser.l"
 { lex_push(MATH_STRING_VALUE, yytext, yyleng); return MATH_STRING_VALUE; }
 	YY_BREAK
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 172 "Parser.l"
+#line 142 "Parser.l"
 { lex_push(MATH_STRING_VALUE, yytext, yyleng); return MATH_STRING_VALUE; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 174 "Parser.l"
+#line 144 "Parser.l"
 { /* ignore */ }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 175 "Parser.l"
+#line 145 "Parser.l"
 ECHO;
 	YY_BREAK
-#line 1077 "lex.yy.c"
+#line 1047 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2079,7 +2049,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 175 "Parser.l"
+#line 145 "Parser.l"
 
 
 /* ---------- Main Test Harness ---------- */

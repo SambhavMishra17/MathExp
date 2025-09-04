@@ -3,45 +3,15 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "MexprEnums.h"
 
-typedef struct lex_data_ {
-    int token_code;
-    int token_len;
-    char* token_val;
-} lex_data_t;
+#include "ParserExport.h"
 
-#define MAX_MEXPR_LEN 512
-#define MAX_STRING_SIZE 512
-
-typedef struct stack_ {
-    int top;
-    lex_data_t data[MAX_MEXPR_LEN];
-} stack_t;
-
-extern "C" int yylex(); 
-
-extern char lex_buffer[MAX_STRING_SIZE]; 
-extern stack_t undo_stack; 
-extern int cyylex(); 
-extern void yyrewind(int n); 
-extern char *curr_ptr; 
-
+/* ---------- Global variables ---------- */
 stack_t undo_stack = { .top = -1 };
-
-#define PARSER_EOL                   300
-#define PARSER_QUIT                  301
-#define MATH_INTEGER_VALUE           302
-#define MATH_DOUBLE_VALUE            303
-#define MATH_IDENTIFIER              304
-#define MATH_IDENTIFIER_IDENTIFIER   305
-#define MATH_STRING_VALUE            306
-#define PARSER_WHITE_SPACE           307
-
 char lex_buffer[MAX_STRING_SIZE];
-char *curr_ptr = lex_buffer; 
-char *lex_curr_token; 
-int lex_curr_token_len; 
+char *curr_ptr = lex_buffer;
+char *lex_curr_token;
+int lex_curr_token_len;
 
 /* ---------- Stack Helpers ---------- */
 static void
