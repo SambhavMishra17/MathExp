@@ -1,25 +1,25 @@
+%{
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>   
-#include <stdlib.h>   
+#include <assert.h>
+#include <stdlib.h>
 #include "MexprEnums.h"
 
 typedef struct lex_data_ {
-    int token_code; 
-    int token_len; 
-    char* token_val; 
-} lex_data_t; 
+    int token_code;
+    int token_len;
+    char* token_val;
+} lex_data_t;
 
-#define MAX_MEXPR_LEN 512 
-#define MAX_STRING_SIZE 512 
+#define MAX_MEXPR_LEN 512
+#define MAX_STRING_SIZE 512
 
 typedef struct stack_ {
-    int top; 
+    int top;
     lex_data_t data[MAX_MEXPR_LEN];
-} stack_t; 
+} stack_t;
 
-stack_t undo_stack = { .top = -1 }; 
-
+stack_t undo_stack = { .top = -1 };
 
 #define PARSER_EOL                   300
 #define PARSER_QUIT                  301
@@ -29,16 +29,15 @@ stack_t undo_stack = { .top = -1 };
 #define MATH_IDENTIFIER_IDENTIFIER   305
 #define MATH_STRING_VALUE            306
 
-// Input buffer for scanning
-extern char lex_buffer[MAX_STRING_SIZE];
+char lex_buffer[MAX_STRING_SIZE];
 
-static void 
+static void
 lex_push(int token_code, const char *yytext, int yyleng) {
     assert(undo_stack.top < MAX_MEXPR_LEN - 1);
     lex_data_t lex_data;
     lex_data.token_code = token_code;
     lex_data.token_len = yyleng;
-    lex_data.token_val = strdup(yytext); // make copy of token
+    lex_data.token_val = strdup(yytext); // copy token text
     undo_stack.data[++undo_stack.top] = lex_data;
 }
 
@@ -51,8 +50,9 @@ lex_pop() {
 
 // Stub for whitespace processing
 static void process_white_space(int count) {
-    (void)count; // ignore for now
+    (void)count;
 }
+%}
 
 %%
 "("                 { lex_push(MATH_CPP_BRACKET_START, yytext, yyleng); return MATH_CPP_BRACKET_START; }
@@ -81,7 +81,7 @@ static void process_white_space(int count) {
 "pow"               { lex_push(MATH_CPP_POW, yytext, yyleng); return MATH_CPP_POW; }
 
 \n                  { return PARSER_EOL; }
-"\\\n"              { /* line continuation, ignore */ }
+"\\\n"              { /* line continuation */ }
 
 [ ]                 { process_white_space(1); }
 [\t]                { process_white_space(4); }
@@ -97,7 +97,7 @@ static void process_white_space(int count) {
 \'[^\']*\'          { lex_push(MATH_STRING_VALUE, yytext, yyleng); return MATH_STRING_VALUE; }
 \"[^\"]*\"          { lex_push(MATH_STRING_VALUE, yytext, yyleng); return MATH_STRING_VALUE; }
 
-.                   { /* ignore everything else */ }
+.                   { /* ignore */ }
 %%
 
 int main(int argc, char **argv) {
