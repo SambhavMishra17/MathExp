@@ -19,6 +19,14 @@ typedef struct stack_ {
     lex_data_t data[MAX_MEXPR_LEN];
 } stack_t;
 
+extern "C" int yylex(); 
+
+extern char lex_buffer[MAX_STRING_SIZE]; 
+extern stack_t undo_stack; 
+extern int cyylex(); 
+extern void yyrewind(int n); 
+extern char *curr_ptr; 
+
 stack_t undo_stack = { .top = -1 };
 
 #define PARSER_EOL                   300
@@ -28,16 +36,21 @@ stack_t undo_stack = { .top = -1 };
 #define MATH_IDENTIFIER              304
 #define MATH_IDENTIFIER_IDENTIFIER   305
 #define MATH_STRING_VALUE            306
+#define PARSER_WHITE_SPACE           307
 
 char lex_buffer[MAX_STRING_SIZE];
+char *curr_ptr = lex_buffer; 
+char *lex_curr_token; 
+int lex_curr_token_len; 
 
+/* ---------- Stack Helpers ---------- */
 static void
 lex_push(int token_code, const char *yytext, int yyleng) {
     assert(undo_stack.top < MAX_MEXPR_LEN - 1);
     lex_data_t lex_data;
     lex_data.token_code = token_code;
     lex_data.token_len = yyleng;
-    lex_data.token_val = strdup(yytext); // copy token text
+    lex_data.token_val = strdup(yytext);
     undo_stack.data[++undo_stack.top] = lex_data;
 }
 
@@ -48,13 +61,74 @@ lex_pop() {
     return res;
 }
 
-// Stub for whitespace processing
-static void process_white_space(int count) {
-    (void)count;
+/* Whitespace processing */
+static void process_white_space(int n) {
+    lex_data_t lex_data; 
+    curr_ptr += n; 
+    lex_data.token_code = PARSER_WHITE_SPACE; 
+    lex_data.token_len = n; 
+    lex_data.token_val = NULL; 
+    lex_push(lex_data.token_code, " ", n); 
+}
+
+/* Custom lex method */
+int cyylex(){
+   int token_code = yylex(); 
+   if (token_code == 0) return 0; 
+
+   lex_data_t lex_data; 
+   lex_data.token_code = token_code; 
+   lex_data.token_len = yyleng; 
+   curr_ptr = curr_ptr + yyleng; 
+   lex_data.token_val = (char *)calloc(1,yyleng + 1); 
+   strncpy(lex_data.token_val, yytext, yyleng); 
+   lex_data.token_val[yyleng] = '\0';
+   undo_stack.data[++undo_stack.top] = lex_data;
+   return token_code; 
+}
+
+/* yyrewind: opposite of cyylex */
+void yyrewind(int n) {
+    if(n <= 0 ) return; 
+    if(curr_ptr == lex_buffer) return; 
+    int data_len = 0; 
+    lex_data_t lex_data; 
+    while (n && undo_stack.top >= 0) {
+        lex_data = lex_pop(); 
+        data_len += lex_data.token_len; 
+        if(lex_data.token_val) free(lex_data.token_val);
+        if(lex_data.token_code == PARSER_WHITE_SPACE){
+            continue; 
+        }
+        n--; 
+    }
+    curr_ptr -= data_len; 
+    yy_scan_string(curr_ptr);
+}
+
+void Parser_stack_reset(void) {
+    while (undo_stack.top >= 0) {
+        if (undo_stack.data[undo_stack.top].token_val)
+            free(undo_stack.data[undo_stack.top].token_val);
+        undo_stack.top--;
+    }
+    undo_stack.top = -1;
+    curr_ptr = lex_buffer;
+}
+
+void lex_set_scan_buffer(const char *buffer) {
+    Parser_stack_reset();
+    if (!buffer) return;
+    strncpy(lex_buffer, buffer, MAX_STRING_SIZE - 1);
+    lex_buffer[MAX_STRING_SIZE - 1] = '\0';
+    curr_ptr = lex_buffer;
+    yy_scan_string(lex_buffer);
 }
 %}
 
+/* ---------- Rules Section ---------- */
 %%
+
 "("                 { lex_push(MATH_CPP_BRACKET_START, yytext, yyleng); return MATH_CPP_BRACKET_START; }
 ")"                 { lex_push(MATH_CPP_BRACKET_END, yytext, yyleng); return MATH_CPP_BRACKET_END; }
 "<="                { lex_push(MATH_CPP_LESS_THAN_EQ, yytext, yyleng); return MATH_CPP_LESS_THAN_EQ; }
@@ -100,6 +174,7 @@ static void process_white_space(int count) {
 .                   { /* ignore */ }
 %%
 
+/* ---------- Main Test Harness ---------- */
 int main(int argc, char **argv) {
     while (1) {
         if (!fgets(lex_buffer, sizeof(lex_buffer), stdin)) break;
@@ -113,8 +188,8 @@ int main(int argc, char **argv) {
 
         int token_code = yylex();
 
-        while (token_code != PARSER_EOL) {
-            printf("token_code = %d, token = %s, token_len = %zu\n",
+        while (token_code != PARSER_EOL && token_code != 0) {
+            printf("token_code = %d, token = %s, token_len = %d\n",
                    token_code, yytext, yyleng);
             token_code = yylex();
         }
