@@ -3,18 +3,71 @@
 #include <string.h>
 #include "MexprEnums.h"
 
+// Extra token codes not in MexprEnums.h
+#define PARSER_EOL                   300
+#define PARSER_QUIT                  301
+#define MATH_INTEGER_VALUE           302
+#define MATH_DOUBLE_VALUE            303
+#define MATH_IDENTIFIER              304
+#define MATH_IDENTIFIER_IDENTIFIER   305
+#define MATH_STRING_VALUE            306
+
 // Input buffer for scanning
 char lex_buffer[512];
+
+// Stub for whitespace processing
+static void process_white_space(int count) {
+    (void)count; // ignore for now
+}
 %}
 
 %%
-\n    { return PARSER_EOL; }
-(0|-?[1-9][0-9]*)    { return MATH_CPP_INT; }
--?[0-9]+\.[0-9]+    { return MATH_CPP_DOUBLE; }
-[a-zA-Z_][a-zA-Z0-9_]*    { return MATH_CPP_VARIABLE; }
-((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})    { return MATH_CPP_IPV4; }
-[ \t\r]+    { /* ignore whitespace */ }
-.    { printf("ignore non-parsable character '%s'\n", yytext); }
+
+"("                 { return MATH_CPP_BRACKET_START; }
+")"                 { return MATH_CPP_BRACKET_END; }
+
+"<="                { return MATH_CPP_LESS_THAN_EQ; }
+"<"                 { return MATH_CPP_LESS_THAN; }
+">"                 { return MATH_CPP_GREATER_THAN; }
+"="                 { return MATH_CPP_EQ; }
+"!="                { return MATH_CPP_NEQ; }
+
+"and"               { return MATH_CPP_AND; }
+"or"                { return MATH_CPP_OR; }
+
+"*"                 { return MATH_CPP_MUL; }
+"+"                 { return MATH_CPP_PLUS; }
+"-"                 { return MATH_CPP_MINUS; }
+"/"                 { return MATH_CPP_DIV; }
+","                 { return MATH_CPP_COMMA; }
+
+"sqrt"              { return MATH_CPP_SQRT; }
+"sqr"               { return MATH_CPP_SQR; }
+"mmax"              { return MATH_CPP_MAX; }
+"mmin"              { return MATH_CPP_MIN; }
+"sin"               { return MATH_CPP_SIN; }
+"cos"               { return MATH_CPP_COS; }
+"pow"               { return MATH_CPP_POW; }
+
+\n                  { return PARSER_EOL; }
+"\\\n"              { /* line continuation, ignore */ }
+
+[ ]                 { process_white_space(1); }
+[\t]                { process_white_space(4); }
+
+"\\q"               { return PARSER_QUIT; }
+
+0|-?[1-9][0-9]*     { return MATH_INTEGER_VALUE; }
+-?[0-9]*\.[0-9]+    { return MATH_DOUBLE_VALUE; }
+
+[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+ { return MATH_IDENTIFIER_IDENTIFIER; }
+[a-zA-Z0-9_]+       { return MATH_IDENTIFIER; }
+
+\'[^\']*\'          { return MATH_STRING_VALUE; }
+\"[^\"]*\"          { return MATH_STRING_VALUE; }
+
+.                   { /* ignore everything else */ }
+
 %%
 
 int main(int argc, char **argv) {
@@ -38,3 +91,5 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
+
+int yywrap(void) { return 1; }
